@@ -1,5 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '../components/layout/Navbar';
+import HeroSection from '../components/HeroSection';
+import FeaturedShopsCarousel from '../components/FeaturedShopsCarousel';
+import CategoryNavigation from '../components/CategoryNavigation';
 import ShopCard from '../components/shop/ShopCard';
 import ProductCard from '../components/shop/ProductCard';
 import { getShops, getProducts, getCities } from '../utils/api';
@@ -7,6 +11,10 @@ import { getShops, getProducts, getCities } from '../utils/api';
 const ICONS = ['🛋️','🛏️','🍽️','🪑','🌿','📦','🧸','🛁','🖥️','🏡'];
 
 export default function HomePage() {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const tabContentRef = useRef(null);
   const [shops, setShops]             = useState([]);
   const [products, setProducts]       = useState([]);
   const [cities, setCities]           = useState([]);
@@ -17,7 +25,77 @@ export default function HomePage() {
   const [allCatNames, setAllCatNames] = useState([]);
   const [loadingShops, setLoadingShops]   = useState(false);
   const [loadingProds, setLoadingProds]   = useState(false);
-  const [tab, setTab] = useState('shops');
+  
+  // Get tab from URL params or default to 'shops'
+  const currentTab = searchParams.get('tab') || 'shops';
+
+  // Update URL when tab changes
+  const handleTabChange = (newTab) => {
+    console.log('Tab clicked:', newTab, 'at', new Date());
+    if (newTab === 'shops') {
+      navigate('/');
+    } else {
+      navigate(`/?tab=${newTab}`);
+    }
+    
+    // Scroll to tab content using ref
+    setTimeout(() => {
+      if (tabContentRef.current) {
+        tabContentRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
+  };
+
+  // Function to scroll to tab content (for external components)
+  const scrollToTabContent = () => {
+    setTimeout(() => {
+      if (tabContentRef.current) {
+        tabContentRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
+  };
+
+  // Scroll to tab content on initial load and when URL tab changes
+  useEffect(() => {
+    // Only scroll if not on the home page without a tab (to show hero section)
+    if (searchParams.get('tab') || search) {
+      console.log('Auto-scroll triggered for tab:', currentTab, 'search:', search);
+      setTimeout(() => {
+        if (tabContentRef.current) {
+          console.log('Scrolling to tab content');
+          tabContentRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+          console.log('Tab content ref not available');
+        }
+      }, 500); // Increased delay for shops content to load
+    }
+  }, [currentTab, search]);
+
+  // Additional scroll when shops data loads (for shops tab)
+  useEffect(() => {
+    if (currentTab === 'shops' && shops.length > 0 && searchParams.get('tab') === 'shops') {
+      console.log('Shops loaded, scrolling to content');
+      setTimeout(() => {
+        if (tabContentRef.current) {
+          tabContentRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    }
+  }, [shops, currentTab]);
+
+  // Scroll when location changes (covers Navbar clicks)
+  useEffect(() => {
+    console.log('Location changed:', location.pathname, location.search);
+    const tab = searchParams.get('tab');
+    if (tab === 'shops' || tab === 'products') {
+      console.log('Scrolling due to location change to tab:', tab);
+      setTimeout(() => {
+        if (tabContentRef.current) {
+          tabContentRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 300);
+    }
+  }, [location]);
 
   // Load cities
   useEffect(() => {
@@ -58,76 +136,48 @@ export default function HomePage() {
   useEffect(() => { loadShops(); }, [loadShops]);
   useEffect(() => { loadProducts(); }, [loadProducts]);
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    setSearch(searchInput);
+  const handleSearch = (searchTerm) => {
+    setSearch(searchTerm);
+    // Scroll to tab content when searching
+    setTimeout(() => {
+      if (tabContentRef.current) {
+        tabContentRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
+  };
+
+  const handleCityChange = (city) => {
+    setSelectedCity(city);
   };
 
   return (
     <div>
       <Navbar />
+      
+      {/* Enhanced Hero Section */}
+      <HeroSection 
+        onSearch={handleSearch}
+        cities={cities}
+        selectedCity={selectedCity}
+        onCityChange={handleCityChange}
+      />
 
-      {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <div className="page-hero" style={{ padding: '4rem 1.25rem 5rem', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
-        {/* Decorative circles */}
-        <div style={{ position:'absolute', top:'-80px', left:'-80px', width:300, height:300, borderRadius:'50%', background:'radial-gradient(circle, rgba(196,149,106,.12), transparent 70%)' }} />
-        <div style={{ position:'absolute', bottom:'-60px', right:'10%', width:260, height:260, borderRadius:'50%', background:'radial-gradient(circle, rgba(196,149,106,.08), transparent 70%)' }} />
-
-        <div style={{ position:'relative', maxWidth:640, margin:'0 auto' }}>
-          <div style={{ display:'inline-block', background:'rgba(196,149,106,.15)', border:'1px solid rgba(196,149,106,.3)', borderRadius:30, padding:'.3rem 1rem', color:'var(--gold)', fontSize:'.78rem', fontWeight:700, letterSpacing:'.06em', marginBottom:'1.25rem' }}>
-            🇵🇰 PAKISTAN'S #1 FURNITURE MARKETPLACE
-          </div>
-          <h1 className="serif" style={{ fontSize:'clamp(2rem,5vw,3rem)', color:'#f5e6d3', fontWeight:800, lineHeight:1.12, marginBottom:'.9rem' }}>
-            Find the Perfect<br />Furniture Near You
-          </h1>
-          <p style={{ color:'#c4a882', fontSize:'1rem', marginBottom:'2rem', lineHeight:1.6 }}>
-            Browse verified furniture shops across Pakistan — explore their full collections, categories, and pricing, all in one place.
-          </p>
-
-          {/* Search bar */}
-          <form onSubmit={handleSearch} style={{ display:'flex', gap:'.5rem', flexWrap:'wrap', justifyContent:'center', maxWidth:580, margin:'0 auto' }}>
-            <input
-              value={searchInput}
-              onChange={e => setSearchInput(e.target.value)}
-              placeholder="Search shops, areas, furniture..."
-              style={{ flex:1, minWidth:180, padding:'.85rem 1.25rem', border:'none', borderRadius:'var(--radius-sm)', fontSize:'.95rem', outline:'none', fontFamily:'DM Sans, sans-serif' }}
-            />
-            <select
-              value={selectedCity}
-              onChange={e => setSelectedCity(e.target.value)}
-              style={{ padding:'.85rem 1rem', border:'none', borderRadius:'var(--radius-sm)', fontSize:'.9rem', background:'#fff', cursor:'pointer', fontFamily:'DM Sans, sans-serif' }}
-            >
-              <option value="all">All Cities</option>
-              {cities.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
-            <button type="submit" className="btn btn-primary" style={{ padding:'.85rem 1.4rem' }}>
-              🔍 Search
-            </button>
-          </form>
-
-          {/* Stats */}
-          <div style={{ display:'flex', justifyContent:'center', gap:'2.5rem', marginTop:'2.5rem', flexWrap:'wrap' }}>
-            {[['🏪','Verified Shops'], ['🛋️','Products Listed'], ['🌆','Cities Covered']].map(([icon, label]) => (
-              <div key={label} style={{ color:'#c4a882', textAlign:'center' }}>
-                <div style={{ fontSize:'1.6rem' }}>{icon}</div>
-                <div style={{ fontSize:'.78rem', marginTop:'.2rem' }}>{label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      {/* Featured Shops Carousel */}
+      {!search && selectedCity === 'all' && (
+        <FeaturedShopsCarousel shops={shops} onScrollToTabContent={scrollToTabContent} />
+      )}
 
       {/* ── Main content ──────────────────────────────────────────────────── */}
-      <div className="container" style={{ paddingTop:'2.5rem', paddingBottom:'3rem' }}>
+      <div ref={tabContentRef} className="container" style={{ paddingTop:'2.5rem', paddingBottom:'3rem' }}>
 
         {/* Tabs */}
         <div style={{ display:'flex', gap:'.5rem', marginBottom:'2rem', background:'var(--cream-mid)', borderRadius:30, padding:'.25rem', width:'fit-content' }}>
           {[['shops','🏪 Shops'], ['products','🛋️ Products']].map(([key, label]) => (
-            <button key={key} onClick={() => setTab(key)} style={{
+            <button key={key} onClick={() => handleTabChange(key)} style={{
               padding:'.55rem 1.4rem', border:'none', borderRadius:30,
-              background: tab === key ? 'var(--brown-dark)' : 'transparent',
-              color: tab === key ? '#f5e6d3' : 'var(--text-muted)',
-              fontWeight: tab === key ? 700 : 500, fontSize:'.88rem',
+              background: currentTab === key ? 'var(--brown-dark)' : 'transparent',
+              color: currentTab === key ? '#f5e6d3' : 'var(--text-muted)',
+              fontWeight: currentTab === key ? 700 : 500, fontSize:'.88rem',
             }}>
               {label}
             </button>
@@ -135,7 +185,7 @@ export default function HomePage() {
         </div>
 
         {/* ── SHOPS TAB ─────────────────────────────────────────────────── */}
-        {tab === 'shops' && (
+        {currentTab === 'shops' && (
           <div>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline', marginBottom:'1.25rem' }}>
               <h2 className="serif" style={{ fontSize:'1.5rem', fontWeight:700 }}>
@@ -160,15 +210,14 @@ export default function HomePage() {
         )}
 
         {/* ── PRODUCTS TAB ──────────────────────────────────────────────── */}
-        {tab === 'products' && (
+        {currentTab === 'products' && (
           <div>
-            {/* Category filter pills */}
-            <div style={{ display:'flex', gap:'.5rem', flexWrap:'wrap', marginBottom:'1.5rem' }}>
-              <CatPill active={activeCat === ''} onClick={() => setActiveCat('')} label="All Products" icon="✨" />
-              {allCatNames.map(name => (
-                <CatPill key={name} active={activeCat === name} onClick={() => setActiveCat(name)} label={name} icon="" />
-              ))}
-            </div>
+            {/* Enhanced Category Navigation */}
+            <CategoryNavigation 
+              categories={allCatNames.map(name => ({ name, count: products.filter(p => p.category?.name === name).length }))}
+              selectedCategory={activeCat}
+              onCategorySelect={setActiveCat}
+            />
 
             <div style={{ marginBottom:'1.25rem' }}>
               <h2 className="serif" style={{ fontSize:'1.5rem', fontWeight:700 }}>
