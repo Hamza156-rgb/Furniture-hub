@@ -35,8 +35,6 @@ export default function Navbar() {
     { name: 'Home', path: '/', icon: '🏠' },
     { name: 'Shops', path: '/?tab=shops', icon: '🏪' },
     { name: 'Products', path: '/?tab=products', icon: '🛋️' },
-    { name: 'About', path: '/about', icon: '📖' },
-    { name: 'Contact', path: '/contact', icon: '📞' },
   ];
 
   return (

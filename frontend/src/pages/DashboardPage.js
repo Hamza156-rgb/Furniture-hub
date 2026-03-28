@@ -424,6 +424,13 @@ function ProfilePanel({ shop, setShop, setAuthShop }) {
     shopLocation: shop?.shopLocation || '',
     shopTimings:  shop?.shopTimings  || '',
     tagline:      shop?.tagline      || '',
+    // Social Media Links
+    facebook:     shop?.socialMedia?.facebook     || '',
+    instagram:    shop?.socialMedia?.instagram    || '',
+    tiktok:       shop?.socialMedia?.tiktok       || '',
+    // Contact Information
+    email:        shop?.contactInfo?.email        || '',
+    whatsapp:     shop?.contactInfo?.whatsapp     || '',
   });
   const [logo, setLogo]     = useState(null);
   const [saving, setSaving] = useState(false);
@@ -434,7 +441,27 @@ function ProfilePanel({ shop, setShop, setAuthShop }) {
     setSaving(true);
     try {
       const fd = new FormData();
-      Object.entries(form).forEach(([k, v]) => fd.append(k, v));
+      
+      // Basic shop info
+      Object.entries({
+        shopName: form.shopName,
+        shopNumber: form.shopNumber,
+        shopCity: form.shopCity,
+        shopAddress: form.shopAddress,
+        shopLocation: form.shopLocation,
+        shopTimings: form.shopTimings,
+        tagline: form.tagline,
+      }).forEach(([k, v]) => fd.append(k, v));
+      
+      // Social media links
+      fd.append('socialMedia[facebook]', form.facebook);
+      fd.append('socialMedia[instagram]', form.instagram);
+      fd.append('socialMedia[tiktok]', form.tiktok);
+      
+      // Contact information
+      fd.append('contactInfo[email]', form.email);
+      fd.append('contactInfo[whatsapp]', form.whatsapp);
+      
       if (logo) fd.append('shopLogo', logo);
       const { data } = await updateMyShop(fd);
       setShop(data.shop);
@@ -488,6 +515,44 @@ function ProfilePanel({ shop, setShop, setAuthShop }) {
           <div className="form-group">
             <label className="form-label">Tagline</label>
             <input className="form-input" value={form.tagline} onChange={e => set('tagline', e.target.value)} placeholder="Your shop's motto..." />
+          </div>
+        </div>
+
+        {/* Social Media Links */}
+        <div style={{ marginTop:'2rem' }}>
+          <h3 style={{ fontSize:'1.1rem', fontWeight:600, color:'var(--text-main)', marginBottom:'1rem', display:'flex', alignItems:'center', gap:'.5rem' }}>
+            <span>📱</span> Social Media Links
+          </h3>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'.85rem' }}>
+            <div className="form-group">
+              <label className="form-label">Facebook URL</label>
+              <input className="form-input" value={form.facebook} onChange={e => set('facebook', e.target.value)} placeholder="https://facebook.com/yourshop" />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Instagram URL</label>
+              <input className="form-input" value={form.instagram} onChange={e => set('instagram', e.target.value)} placeholder="https://instagram.com/yourshop" />
+            </div>
+            <div className="form-group" style={{ gridColumn:'1 / -1' }}>
+              <label className="form-label">TikTok URL</label>
+              <input className="form-input" value={form.tiktok} onChange={e => set('tiktok', e.target.value)} placeholder="https://tiktok.com/@yourshop" />
+            </div>
+          </div>
+        </div>
+
+        {/* Contact Information */}
+        <div style={{ marginTop:'2rem' }}>
+          <h3 style={{ fontSize:'1.1rem', fontWeight:600, color:'var(--text-main)', marginBottom:'1rem', display:'flex', alignItems:'center', gap:'.5rem' }}>
+            <span>📞</span> Contact Information
+          </h3>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'.85rem' }}>
+            <div className="form-group">
+              <label className="form-label">Business Email</label>
+              <input className="form-input" value={form.email} onChange={e => set('email', e.target.value)} placeholder="info@yourshop.com" />
+            </div>
+            <div className="form-group">
+              <label className="form-label">WhatsApp Number</label>
+              <input className="form-input" value={form.whatsapp} onChange={e => set('whatsapp', e.target.value)} placeholder="+92 300 1234567" />
+            </div>
           </div>
         </div>
 

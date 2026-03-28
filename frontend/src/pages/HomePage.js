@@ -148,6 +148,12 @@ export default function HomePage() {
 
   const handleCityChange = (city) => {
     setSelectedCity(city);
+    // Scroll to tab content when city changes
+    setTimeout(() => {
+      if (tabContentRef.current) {
+        tabContentRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
   };
 
   return (
