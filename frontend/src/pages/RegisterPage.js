@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { registerUser } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
+import { FiEye, FiEyeOff } from 'react-icons/fi';
 
 const ICONS = ['🛋️','🛏️','🍽️','🪑','🌿','📦','🧸','🖥️','🛁','🏡'];
 
@@ -129,10 +130,42 @@ function SectionTitle({ children }) {
 }
 
 function Field({ label, type='text', required, value, onChange, placeholder }) {
+  const [showPassword, setShowPassword] = useState(false);
+  const isPassword = type === 'password';
+  
   return (
     <div className="form-group">
       <label className="form-label">{label}{required && ' *'}</label>
-      <input className="form-input" type={type} required={required} value={value} placeholder={placeholder || ''} onChange={e => onChange(e.target.value)} />
+      <div style={{ position:'relative' }}>
+        <input 
+          className="form-input" 
+          type={isPassword && showPassword ? 'text' : type} 
+          required={required} 
+          value={value} 
+          placeholder={placeholder || ''} 
+          onChange={e => onChange(e.target.value)}
+          style={isPassword ? { paddingRight:'2.5rem' } : {}}
+        />
+        {isPassword && (
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            style={{
+              position:'absolute',
+              right:'0.75rem',
+              top:'50%',
+              transform:'translateY(-50%)',
+              border:'none',
+              background:'none',
+              cursor:'pointer',
+              color:'var(--text-muted)',
+              padding:'0.25rem'
+            }}
+          >
+            {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+          </button>
+        )}
+      </div>
     </div>
   );
 }

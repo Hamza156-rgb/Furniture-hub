@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import Navbar from '../components/layout/Navbar';
 import { useAuth } from '../context/AuthContext';
 import { updateProfile, changePassword } from '../utils/api';
+import { FiEye, FiEyeOff } from 'react-icons/fi';
 
 export default function ProfilePage() {
   const { user, loadUser } = useAuth();
@@ -92,10 +93,41 @@ export default function ProfilePage() {
 }
 
 function Field({ label, type='text', value, onChange, placeholder }) {
+  const [showPassword, setShowPassword] = useState(false);
+  const isPassword = type === 'password';
+  
   return (
     <div className="form-group">
       <label className="form-label">{label}</label>
-      <input className="form-input" type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder || ''} />
+      <div style={{ position:'relative' }}>
+        <input 
+          className="form-input" 
+          type={isPassword && showPassword ? 'text' : type} 
+          value={value} 
+          onChange={e => onChange(e.target.value)} 
+          placeholder={placeholder || ''}
+          style={isPassword ? { paddingRight:'2.5rem' } : {}}
+        />
+        {isPassword && (
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            style={{
+              position:'absolute',
+              right:'0.75rem',
+              top:'50%',
+              transform:'translateY(-50%)',
+              border:'none',
+              background:'none',
+              cursor:'pointer',
+              color:'var(--text-muted)',
+              padding:'0.25rem'
+            }}
+          >
+            {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+          </button>
+        )}
+      </div>
     </div>
   );
 }

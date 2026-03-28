@@ -3,12 +3,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { loginUser } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
+import { FiEye, FiEyeOff } from 'react-icons/fi';
 
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
@@ -51,7 +53,34 @@ export default function LoginPage() {
               </div>
               <div className="form-group">
                 <label className="form-label">Password</label>
-                <input className="form-input" type="password" required value={form.password} onChange={e => set('password', e.target.value)} placeholder="••••••••" />
+                <div style={{ position:'relative' }}>
+                  <input 
+                    className="form-input" 
+                    type={showPassword ? 'text' : 'password'} 
+                    required 
+                    value={form.password} 
+                    onChange={e => set('password', e.target.value)} 
+                    placeholder="••••••••" 
+                    style={{ paddingRight:'2.5rem' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    style={{
+                      position:'absolute',
+                      right:'0.75rem',
+                      top:'50%',
+                      transform:'translateY(-50%)',
+                      border:'none',
+                      background:'none',
+                      cursor:'pointer',
+                      color:'var(--text-muted)',
+                      padding:'0.25rem'
+                    }}
+                  >
+                    {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+                  </button>
+                </div>
               </div>
               <button type="submit" disabled={loading} className="btn btn-primary btn-lg" style={{ marginTop:'.5rem', justifyContent:'center' }}>
                 {loading ? '⏳ Signing in...' : 'Sign In →'}
